@@ -1,3 +1,6 @@
+using TodoMvp.Application.Configurations;
+using TodoMvp.Persistence.Configurations;
+
 var builder = WebApplication.CreateBuilder(args);
 const string AllowFrontendPolicy = "AllowFrontend";
 
@@ -11,6 +14,10 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod();
     });
 });
+
+builder.Services
+    .AddApplicationDependencies(builder.Configuration)
+    .AddPersistenceDependencies(builder.Configuration);
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
