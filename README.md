@@ -30,7 +30,7 @@ The system is designed as an **MVP** but with a clear path toward a more product
 
 **Frontend**
 
-- React (with JSX; TypeScript recommended but optional)
+- React (with JSX; TypeScript)
 - Jest (and React Testing Library) for unit/component tests
 - Playwright for end-to-end tests
 
