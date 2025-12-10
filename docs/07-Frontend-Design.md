@@ -318,7 +318,7 @@ Accessibility is “best effort” at MVP level but should avoid obviously inacc
 
 ## 10. Frontend Testing Strategy
 
-### 10.1 Unit and Component Tests (Jest + React Testing Library)
+### 10.1 Unit and Component Tests (Vitest (Jest-compatible API) + React Testing Library)
 
 - Test key components:
   - `TaskList`:

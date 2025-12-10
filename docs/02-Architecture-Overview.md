@@ -158,7 +158,7 @@ The frontend is a **React** single-page application, likely with **TypeScript**,
 ### 5.2. Technology & Framework Choices
 - **React** (version to be decided, e.g., 18+).
 - **TypeScript** (recommended, but optional if out-of-scope).
-- **Jest** for unit tests (and React Testing Library for component tests).
+- **Vitest (Jest-compatible API)** for unit tests (and React Testing Library for component tests).
 - **Playwright** for end-to-end browser tests.
 
 ---
@@ -260,7 +260,7 @@ Tests are distributed across layers but share the same architectural goal: **con
         - Domain logic (e.g., status transitions)
     - Optional integration tests for:
         - Controllers + EF Core InMemory
-- **Frontend (Jest)**:
+- **Frontend (Vitest (Jest-compatible API) for unit tests)**:
     - Unit/component tests for:
         - Components (rendering tasks, handling user input)
         - Hooks (data fetching, state logic)

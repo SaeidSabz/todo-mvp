@@ -175,7 +175,7 @@ Full WCAG compliance is not required for this MVP but the implementation should 
   - Backend:
     - Business logic in services and domain classes must not be tightly coupled to framework details.
   - Frontend:
-    - Components should be testable in isolation (e.g., via Jest and React Testing Library).
+    - Components should be testable in isolation (e.g., via Vitest (Jest-compatible API) and React Testing Library).
 
 - **Test Environments**
   - It should be possible to run:
