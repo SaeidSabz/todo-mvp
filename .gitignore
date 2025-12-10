@@ -1,0 +1,57 @@
+###############################################
+# Global ignores
+###############################################
+*.DS_Store
+*.tmp
+*.log
+
+###############################################
+# .NET / C# Backend
+###############################################
+# Build output
+bin/
+obj/
+out/
+.vs/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# VS Code settings (optional ignore)
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# Rider / JetBrains IDE
+.idea/
+
+# NuGet packages
+*.nupkg
+# Optional: If you use a local packages folder
+packages/
+
+# Coverage reports
+coverage/
+*.lcov
+
+###############################################
+# Frontend (React / Vite)
+###############################################
+# Node modules
+**/node_modules/
+
+# Build output (Vite or CRA)
+dist/
+build/
+
+# Environment files
+*.env
+*.env.local
+*.env.*.local
+
+# Mac, Windows junk
+Thumbs.db
+ehthumbs.db

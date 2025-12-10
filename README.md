@@ -95,15 +95,44 @@ cd todo-mvp
 ```
 
 
-### 5.3 Run the Backend (API)
+### 5.3 Run the Backend (TodoMvp.Api)
 
-From the project root:
-```bash
-cd src/backend
-# TODO: add actual commands once the .NET project is created, e.g.:
-# dotnet restore
-# dotnet run
-```
+The backend is a .NET 10 Web API project located under `src/backend/TodoMvp.Api`.
+
+#### Prerequisites
+
+- .NET SDK 10 installed
+
+You can verify your installation with:
+
+    dotnet --version
+
+#### How to run the backend
+
+From the repository root:
+
+    cd src/backend/TodoMvp.Api
+    dotnet run
+
+You should see console output indicating that the application is listening on HTTP/HTTPS ports, for example:
+
+    Now listening on: https://localhost:7157
+    Now listening on: http://localhost:5157
+
+#### Health Check Endpoint
+
+To verify the backend is running, call the health endpoint in a browser or with a tool like curl/Postman:
+
+    GET https://localhost:<port>/api/health
+
+Expected JSON response shape:
+
+    {
+      "status": "ok",
+      "timestampUtc": "2025-01-01T12:00:00Z"
+    }
+
+(The exact `timestampUtc` value will vary.)
 
 The API will listen on a local port (e.g., ```http://localhost:5000```) depending on configuration.
 
