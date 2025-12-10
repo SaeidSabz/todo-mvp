@@ -1,4 +1,7 @@
 <Solution>
   <Project Path="TodoMvp.Api.Tests/TodoMvp.Api.Tests.csproj" Id="8a562663-269e-4cb8-ab45-98496dbec396" />
   <Project Path="TodoMvp.Api/TodoMvp.Api.csproj" />
+  <Project Path="TodoMvp.Application/TodoMvp.Application.csproj" Id="23d919cc-75d4-4ba2-9f59-f661806d251c" />
+  <Project Path="TodoMvp.Domain/TodoMvp.Domain.csproj" Id="973e7748-391c-4846-a922-e828b6f45dff" />
+  <Project Path="TodoMvp.Persistence/TodoMvp.Persistence.csproj" Id="4be008cb-4db7-47bf-be90-97b30ce0877c" />
 </Solution>
