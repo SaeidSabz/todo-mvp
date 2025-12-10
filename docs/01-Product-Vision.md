@@ -44,7 +44,7 @@ The application should serve as:
 - A **reference implementation** of:
   - .NET Core REST API with EF Core
   - React frontend consuming that API
-  - Automated tests across layers (NUnit, Jest, Playwright)
+  - Automated tests across layers (NUnit, Vitest (Jest-compatible API) for unit tests, Playwright)
 
 ---
 
@@ -86,7 +86,7 @@ In addition to functionality, the MVP must demonstrate:
 - **Responsive UI** that works on desktop and mobile
 - **Automated tests**:
   - Backend (NUnit)
-  - Frontend unit tests (Jest)
+  - Frontend unit tests (Vitest (Jest-compatible API) for unit tests)
   - At least one end-to-end scenario (Playwright)
 
 ---

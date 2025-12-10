@@ -270,7 +270,7 @@ The functional behavior above must be verifiable by automated tests:
     - Valid/invalid task creation.
     - Status transitions.
     - Updates and deletions.
-- **Frontend (Jest)**
+- **Frontend (Vitest (Jest-compatible API) for unit tests)**
   - Verify UI behavior:
     - Forms show validation messages.
     - Lists update after operations.
