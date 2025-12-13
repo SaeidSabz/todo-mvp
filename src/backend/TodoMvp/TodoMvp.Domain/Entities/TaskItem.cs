@@ -1,6 +1,6 @@
 ﻿namespace TodoMvp.Domain.Entities
 {
-    public class Task
+    public class TaskItem
     {
         public int Id { get; set; }
 

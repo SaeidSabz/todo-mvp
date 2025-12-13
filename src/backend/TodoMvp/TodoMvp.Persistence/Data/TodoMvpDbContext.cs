@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Entities = TodoMvp.Domain.Entities;
+using TodoMvp.Domain.Entities;
 
 namespace TodoMvp.Persistence.Data
 {
@@ -10,7 +10,7 @@ namespace TodoMvp.Persistence.Data
         {
         }
 
-        public DbSet<Entities.Task> Tasks => Set<Entities.Task>();
+        public DbSet<TaskItem> Tasks => Set<TaskItem>();
 
         public override int SaveChanges()
         {
@@ -28,7 +28,7 @@ namespace TodoMvp.Persistence.Data
         {
             var utcNow = DateTime.UtcNow;
 
-            foreach (var entry in ChangeTracker.Entries<Entities.Task>())
+            foreach (var entry in ChangeTracker.Entries<TaskItem>())
             {
                 if (entry.State == EntityState.Added)
                 {
