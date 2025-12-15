@@ -1,0 +1,48 @@
+.card {
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 1rem;
+  background: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  border: 1px solid #ddd;
+  white-space: nowrap;
+}
+
+.badgeCompleted {
+  color: green;
+}
+
+.badgeOpen {
+  color: #333;
+}
+
+.description {
+  margin-top: 0.6rem;
+  margin-bottom: 0.6rem;
+  color: #444;
+}
+
+.meta {
+  margin: 0;
+  margin-top: 0.75rem;
+  color: #666;
+  font-size: 0.9rem;
+}
