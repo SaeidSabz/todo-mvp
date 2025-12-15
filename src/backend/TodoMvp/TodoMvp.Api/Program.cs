@@ -83,3 +83,8 @@ app.Map("/error", (HttpContext httpContext) =>
 app.MapControllers();
 
 app.Run();
+
+/// <summary>
+/// Partial Program class required for WebApplicationFactory integration tests.
+/// </summary>
+public partial class Program { }

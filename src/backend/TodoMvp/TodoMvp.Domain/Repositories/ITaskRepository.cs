@@ -35,14 +35,14 @@ namespace TodoMvp.Domain.Repositories
         /// <param name="task">The task to update.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="task"/> is null.</exception>
-        Task UpdateAsync(TaskItem existing, CancellationToken cancellationToken);
+        Task<bool> UpdateAsync(TaskItem existing, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Deletes an existing task and persists changes.
+        /// Deletes a task by its identifier.
         /// </summary>
-        /// <param name="task">The task to delete.</param>
+        /// <param name="id">The task identifier.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="task"/> is null.</exception>
-        Task DeleteAsync(TaskItem existing, CancellationToken cancellationToken);
+        /// <returns>True if the task existed and was deleted; otherwise false.</returns>
+        Task<bool> DeleteByIdAsync(int id, CancellationToken cancellationToken = default);
     }
 }

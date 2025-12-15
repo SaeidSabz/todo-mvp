@@ -58,14 +58,7 @@ namespace TodoMvp.Application.Tasks
 
         public async Task<bool> DeleteTaskAsync(int id, CancellationToken cancellationToken = default)
         {
-            var existing = await _taskRepository.GetByIdAsync(id, cancellationToken);
-            if (existing is null)
-            {
-                return false;
-            }
-
-            await _taskRepository.DeleteAsync(existing, cancellationToken);
-            return true;
+            return await _taskRepository.DeleteByIdAsync(id, cancellationToken);
         }
 
         private static TaskDto MapToDto(TaskItem task) =>
