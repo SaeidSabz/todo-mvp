@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using TodoMvp.Api.Contracts.Errors;
 using TodoMvp.Application.Tasks;
 using TodoMvp.Application.Tasks.Models;
 
@@ -52,7 +53,11 @@ namespace TodoMvp.Api.Controllers
 
             if (task is null)
             {
-                return NotFound(new { error = "NotFound", message = $"Task with id '{id}' was not found." });
+                return NotFound(new ApiErrorResponse
+                {
+                    Error = "NotFound",
+                    Message = $"Task with id '{id}' was not found."
+                });
             }
 
             return Ok(task);
@@ -104,7 +109,11 @@ namespace TodoMvp.Api.Controllers
 
             if (!updated)
             {
-                return NotFound(new { error = "NotFound", message = $"Task with id '{id}' was not found." });
+                return NotFound(new ApiErrorResponse
+                {
+                    Error = "NotFound",
+                    Message = $"Task with id '{id}' was not found."
+                });
             }
 
             return NoContent();
