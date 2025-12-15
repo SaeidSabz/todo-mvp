@@ -51,27 +51,39 @@ namespace TodoMvp.Persistence.Repositories
         }
 
         /// <inheritdoc cref="ITaskRepository.UpdateAsync(TaskItem, CancellationToken)"/>
-        public async Task UpdateAsync(TaskItem task, CancellationToken cancellationToken = default)
+        public async Task<bool> UpdateAsync(TaskItem task, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(task);
 
-            // Attach + mark modified to support scenarios where the entity came from a different context
-            // or was loaded AsNoTracking (which we do in GetByIdAsync).
-            _dbContext.Tasks.Attach(task);
-            _dbContext.Entry(task).State = EntityState.Modified;
+            var existing = await _dbContext.Tasks.FirstOrDefaultAsync(t => t.Id == task.Id, cancellationToken);
+            if (existing is null)
+            {
+                return false;
+            }
+
+            existing.Title = task.Title;
+            existing.Description = task.Description;
+            existing.IsCompleted = task.IsCompleted;
+            existing.DueDate = task.DueDate;
+            existing.UpdatedAt = task.UpdatedAt;
 
             await _dbContext.SaveChangesAsync(cancellationToken);
+            return true;
         }
 
-        /// <inheritdoc cref="ITaskRepository.DeleteAsync(TaskItem, CancellationToken)"/>
-        public async Task DeleteAsync(TaskItem task, CancellationToken cancellationToken = default)
+        /// <inheritdoc cref="ITaskRepository.DeleteByIdAsync(TaskItem, CancellationToken)"/>
+        public async Task<bool> DeleteByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            ArgumentNullException.ThrowIfNull(task);
+            var existing = await _dbContext.Tasks.FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+            if (existing is null)
+            {
+                return false;
+            }
 
-            _dbContext.Tasks.Attach(task);
-            _dbContext.Tasks.Remove(task);
-
+            _dbContext.Tasks.Remove(existing);
             await _dbContext.SaveChangesAsync(cancellationToken);
+            return true;
+
         }
     }
 }
