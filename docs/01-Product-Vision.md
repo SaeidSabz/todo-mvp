@@ -2,14 +2,15 @@
 
 ## 1. Overview
 
-This project is a **To-Do Task Management** application with a **.NET Core backend API** and a **React frontend**. The goal of this MVP is to deliver a **simple, clean, and extensible** task manager that demonstrates:
+This project is a **To-Do Task Management** application with a **.NET 10 backend API** and a **React frontend**.  
+The goal of this MVP is to deliver a **simple, clean, and extensible** task manager that demonstrates:
 
 - Clear separation between frontend and backend
 - Good architecture and code organization
 - Reasonable test coverage
 - A foundation that can be evolved into a real production product
 
-This document defines **what we are building and why**, at a product level (not a technical spec).
+This document defines **what we are building and why**, at a product level (not a technical specification).
 
 ---
 
@@ -19,11 +20,11 @@ Knowledge workers, students, and small teams often need a **lightweight, focused
 
 Common problems with existing tools:
 
-- Too complex or heavy for simple personal / small-team workflows
+- Too complex or heavy for simple personal or small-team workflows
 - Not easily adaptable or extendable for specific needs
-- Hard to reason about or extend from a developer’s perspective (for interview/demo purposes)
+- Hard to reason about or extend from a developer’s perspective (for interview or demo purposes)
 
-This MVP aims to be a **simple, opinionated** task manager, optimized for clarity and extensibility, not for feature parity with large incumbents.
+This MVP aims to be a **simple, opinionated** task manager, optimized for clarity and extensibility rather than feature parity with large incumbents.
 
 ---
 
@@ -42,9 +43,9 @@ The application should serve as:
 
 - A practical tool for basic daily task management
 - A **reference implementation** of:
-  - .NET Core REST API with EF Core
-  - React frontend consuming that API
-  - Automated tests across layers (NUnit, Vitest (Jest-compatible API) for unit tests, Playwright)
+  - A .NET 10 REST API with EF Core
+  - A React frontend consuming that API
+  - Automated unit and component tests (NUnit and Vitest)
 
 ---
 
@@ -54,7 +55,7 @@ For this MVP, we primarily focus on:
 
 1. **Single user / individual contributor**
    - Needs a simple list of tasks
-   - Wants to track what needs doing today and what is done
+   - Wants to track what needs doing and what is completed
 
 2. **Small, informal teams (future)**
    - Might share tasks in the same instance
@@ -72,12 +73,14 @@ The MVP should allow a user to:
 - **Create** a task with:
   - Title (required)
   - Optional description
-  - Optional status, due date, and priority (if included in MVP scope)
+  - Optional due date
 - **View** a list of all tasks
-- **Update** task fields (e.g., title, description, status)
-- **Change** task status (e.g., Todo → In Progress → Done)
+- **Update** task fields (title, description, due date)
+- **Change** task status between:
+  - Open
+  - Completed
 - **Delete** a task
-- **Filter or view** tasks based on status (e.g., show only “Open” or “Completed” tasks)
+- **Filter** tasks based on status (e.g., All, Open, Completed)
 
 In addition to functionality, the MVP must demonstrate:
 
@@ -85,9 +88,8 @@ In addition to functionality, the MVP must demonstrate:
 - **RESTful API design** using JSON
 - **Responsive UI** that works on desktop and mobile
 - **Automated tests**:
-  - Backend (NUnit)
-  - Frontend unit tests (Vitest (Jest-compatible API) for unit tests)
-  - At least one end-to-end scenario (Playwright)
+  - Backend unit tests (NUnit)
+  - Frontend unit and component tests (Vitest)
 
 ---
 
@@ -95,17 +97,15 @@ In addition to functionality, the MVP must demonstrate:
 
 The following are explicitly **out of scope** for this MVP, but may be added later:
 
-- Full **authentication and authorization** (e.g., login, roles, JWT, OAuth)
-- Multi-tenant support and complex user management
-- Advanced task hierarchy:
-  - Subtasks
-  - Projects / boards / swimlanes
-- Real-time collaboration (e.g., websockets, live updates)
-- Complex analytics, reporting, or dashboards
-- Integration with external services (email, calendars, chat tools)
-- Mobile native applications (iOS / Android)
+- Authentication and authorization (login, roles, JWT, OAuth)
+- Multi-tenant or multi-user data separation
+- Advanced task hierarchies (subtasks, projects, boards)
+- Real-time collaboration or live updates
+- Complex analytics or reporting
+- Integration with external services
+- Native mobile applications (iOS / Android)
 
-These non-goals help keep the MVP **focused** while allowing room for clearly documented future improvements.
+These non-goals help keep the MVP **focused** while leaving room for future expansion.
 
 ---
 
@@ -114,57 +114,54 @@ These non-goals help keep the MVP **focused** while allowing room for clearly do
 For the MVP, the product feature set includes:
 
 1. **Task Management**
-   - Create/edit/delete tasks
-   - Basic status workflow (e.g., Todo, In Progress, Done)
-   - Optional: due date and priority
+   - Create, edit, and delete tasks
+   - Basic status workflow: Open ↔ Completed
+   - Optional due date
 
 2. **Task List View**
-   - List of tasks with key information (title, status, optional due date/priority)
-   - Simple filtering or grouping by status (e.g., separate columns or filters)
+   - List of tasks with key information
+   - Filtering by status
 
-3. **Task Details / Editing**
-   - Ability to view and edit details of an existing task
+3. **Task Editing**
+   - Inline or modal-based editing of task details
 
 4. **User Experience**
    - Responsive layout (desktop, tablet, mobile)
-   - Simple, intuitive interactions with minimal clicks
+   - Simple, intuitive interactions
 
 5. **System & Technical**
-   - REST API with clear endpoints for CRUD operations
-   - Frontend consuming API using fetch/axios (or similar)
-   - Automated tests across layers
+   - REST API with clear CRUD endpoints
+   - Frontend consuming API via HTTP
+   - Automated tests across backend and frontend
 
 ---
 
 ## 8. Constraints & Assumptions (Product Level)
 
 - MVP uses an **in-memory database** via EF Core:
-  - Data is **not persistent** across application restarts
-  - This is acceptable for demonstration and local development
-- The MVP is designed for **a single user context**:
-  - No per-user separation of data yet
-- The system is not optimized for large datasets:
-  - Intended for up to hundreds of tasks, not millions
-- The primary environment is:
-  - Local development (developer machine)
-  - Potential simple deployment for demonstration
+  - Data is not persistent across restarts
+- Designed for a **single-user context**
+- Not optimized for large datasets
+- Primary usage is:
+  - Local development
+  - Demonstration and code review
 
-Technical constraints (e.g., .NET version, React version) are covered in the architecture and README docs.
+Technical constraints are covered in architecture and README documentation.
 
 ---
 
-## 9. “Production-MVP Mindset”
+## 9. Production-MVP Mindset
 
-Although this is an MVP with limited scope, the design should **align with production-minded principles**:
+Although limited in scope, the MVP follows **production-minded principles**:
 
-- Clear separation of concerns and layers
-- Predictable and consistent API contracts
-- Error handling that can be evolved (e.g., centralized error responses)
-- Testability and maintainability in mind from day one
-- A path to:
-  - Swap in-memory storage with a real database
-  - Add authentication and user context
-  - Support more complex features without massive rewrites
+- Clear separation of concerns
+- Predictable API contracts
+- Centralized error handling
+- Testability and maintainability from day one
+- A clear path to:
+  - Persistent storage
+  - Authentication and user context
+  - Feature expansion without major rewrites
 
 ---
 
@@ -172,15 +169,15 @@ Although this is an MVP with limited scope, the design should **align with produ
 
 The MVP is considered successful if:
 
-- A user can reliably perform the full task lifecycle:
+- A user can complete the full task lifecycle:
   - Create → Read → Update → Complete → Delete
-- The system is **easy to set up and run** following the README instructions
+- The system is easy to set up using the README
 - Reviewers can quickly understand:
-  - Architectural decisions
+  - Architecture
   - Data model
   - API surface
   - Testing approach
-- The codebase and documentation clearly show **how the system would evolve** into:
-  - A multi-user, persistent, production-ready application
+- The codebase clearly shows how it could evolve into a production-ready system
 
-This document is the **product-level guide**. Technical implementation details are covered in `Architecture-Overview.md`, `API-Spec.md`, `Data-Model.md`, and related docs.
+This document is the **product-level guide**.  
+Technical details are covered in `Architecture-Overview.md`, `API-Spec.md`, `Data-Model.md`, and related documents.

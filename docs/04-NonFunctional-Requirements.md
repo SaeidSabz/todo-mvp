@@ -3,7 +3,7 @@
 ## 1. Purpose and Scope
 
 This document describes the **non-functional requirements (NFRs)** for the To-Do Task Management MVP.  
-These requirements define **how** the system should behave in terms of performance, reliability, security, usability, maintainability, and other quality attributes, beyond the functional features.
+These requirements define **how** the system should behave in terms of performance, reliability, security, usability, maintainability, and other quality attributes, beyond functional features.
 
 The scope of these NFRs is aligned with an MVP that:
 
@@ -17,12 +17,12 @@ The scope of these NFRs is aligned with an MVP that:
 
 - **Response Time (Local Development)**
   - For typical operations (create, list, update, delete tasks), backend API responses should complete in:
-    - Under 300 ms on a typical developer machine under light load.
+    - **Under 300 ms** on a typical developer machine under light load.
   - UI interactions (e.g., showing updated list after a successful operation) should feel immediate from the user’s perspective.
 
 - **Front-End Rendering**
   - Initial load of the main task list page should complete in a reasonable time on modern browsers and networks.
-  - No heavy assets or large bundles that unnecessarily slow down initial page load for an MVP.
+  - Avoid heavy assets or large bundles that unnecessarily slow down initial page load for an MVP.
 
 - **Data Volume**
   - Designed to handle:
@@ -43,7 +43,7 @@ The scope of these NFRs is aligned with an MVP that:
 
 - **Data Persistence**
   - The current implementation uses **EF Core InMemory**, so data is **not persisted** across application restarts.
-  - This behavior is acceptable for MVP and must be clearly documented in README and assumptions.
+  - This behavior is acceptable for MVP and must be clearly documented.
 
 ---
 
@@ -57,7 +57,7 @@ The scope of these NFRs is aligned with an MVP that:
 - **Input Validation**
   - The backend must validate incoming data:
     - Reject invalid or malformed payloads with appropriate error responses.
-  - Prevent obvious injection-style issues (e.g., treating untrusted input safely).
+  - Treat all client input as untrusted.
 
 - **Transport Security**
   - For local development, HTTP is acceptable.
@@ -92,13 +92,13 @@ The scope of these NFRs is aligned with an MVP that:
   - UI elements (inputs, buttons, links) should have:
     - Clear labels or accessible names.
     - Reasonable focus states for keyboard navigation.
-  - Color is not the only way to distinguish key states where practical.
+  - Color should not be the only way to distinguish key states where practical.
 
 - **Keyboard Usage**
   - Users should be able to navigate and operate main features (creating and editing tasks) using only the keyboard.
 
 - **Screen Readers (Best Effort)**
-  - Use standard HTML semantics where possible (form controls, headings, lists) to improve screen reader compatibility for an MVP.
+  - Use standard HTML semantics where possible (form controls, headings, lists) to improve screen reader compatibility.
 
 Full WCAG compliance is not required for this MVP but the implementation should **avoid clearly inaccessible patterns**.
 
@@ -108,11 +108,11 @@ Full WCAG compliance is not required for this MVP but the implementation should 
 
 - **Code Organization**
   - Backend:
-    - Must follow a layered architecture (API, application, data, domain).
+    - Follow a layered architecture (API, application, persistence, domain).
     - Clear separation of concerns (controllers vs. services vs. persistence).
   - Frontend:
     - Components should be small, focused, and reusable.
-    - Separation between presentation components and data-fetching logic where appropriate.
+    - Separation between UI components and API/data-fetching logic where appropriate.
 
 - **Readability**
   - Use meaningful naming conventions for classes, functions, components, and variables.
@@ -126,10 +126,10 @@ Full WCAG compliance is not required for this MVP but the implementation should 
 
 - **Coding Standards**
   - Follow common conventions of:
-    - C# for backend.
-    - React (and TypeScript if used) for frontend.
+    - C# for backend (**.NET 10**).
+    - React + TypeScript for frontend (**React 19**).
   - Linting / formatting tools are recommended:
-    - e.g., ESLint + Prettier on the frontend (if configured).
+    - ESLint on the frontend (if configured).
 
 ---
 
@@ -142,7 +142,7 @@ Full WCAG compliance is not required for this MVP but the implementation should 
 
 - **Horizontal Scaling (Future)**
   - Not required for MVP, but:
-    - The backend should avoid using in-memory state that assumes a single instance (beyond the intentional use of EF InMemory, which will be replaced in a real deployment).
+    - The backend should avoid using in-memory state that assumes a single instance (beyond the intentional use of EF InMemory).
     - The system should be able to move toward stateless API instances with external storage.
 
 - **Extensibility**
@@ -157,8 +157,8 @@ Full WCAG compliance is not required for this MVP but the implementation should 
 
 - **Logging**
   - Backend:
-    - Log application start/stop events, and unexpected errors.
-    - Use a standard logging abstraction to allow redirection to files or external systems later.
+    - Log application start/stop events and unexpected errors.
+    - Use standard .NET logging abstractions to allow redirection to files or external systems later.
   - Frontend:
     - Minimal logging, mainly for development and debugging.
 
@@ -173,15 +173,14 @@ Full WCAG compliance is not required for this MVP but the implementation should 
 - **Automated Testing**
   - System must be structured so that key logic can be unit-tested without heavy mocking or setup.
   - Backend:
-    - Business logic in services and domain classes must not be tightly coupled to framework details.
+    - Business logic in services and domain classes should not be tightly coupled to framework details.
   - Frontend:
-    - Components should be testable in isolation (e.g., via Vitest (Jest-compatible API) and React Testing Library).
+    - Components should be testable in isolation (Vitest + React Testing Library).
 
-- **Test Environments**
+- **Test Commands**
   - It should be possible to run:
-    - Backend tests via a standard test command (e.g., `dotnet test`).
-    - Frontend tests via a standard command (e.g., `npm test` or `npm run test`).
-    - End-to-end tests via a Playwright command.
+    - Backend tests via `dotnet test`
+    - Frontend tests via `npm test`
 
 - **Determinism**
   - Tests should be deterministic and not depend on random timing or external state (within the limits of the MVP).
@@ -191,12 +190,12 @@ Full WCAG compliance is not required for this MVP but the implementation should 
 ## 11. Portability and Deployment
 
 - **Backend**
-  - Should run on any environment that supports the chosen .NET Core version (Windows, macOS, Linux).
-  - Configuration (e.g., ports, database connection details) should be externalized through configuration files or environment variables.
+  - Should run on any environment that supports **.NET 10** (Windows, macOS, Linux).
+  - Configuration (e.g., ports, database connection details in the future) should be externalized through configuration files or environment variables.
 
 - **Frontend**
-  - Should run in modern browsers (Chrome, Edge, Firefox, Safari) in their current versions.
-  - Local development should be easy using standard tools (Node.js and package manager).
+  - Should run in modern browsers (Chrome, Edge, Firefox, Safari) in current versions.
+  - Local development should be easy using standard Node.js tooling.
 
 - **Containerization (Future)**
   - Not required for MVP but the structure should make it straightforward to:
@@ -213,7 +212,7 @@ Full WCAG compliance is not required for this MVP but the implementation should 
 
 - **Privacy**
   - No personal or sensitive user data is required for MVP.
-  - If deployed publicly, basic privacy considerations must be respected (e.g., no logging of sensitive text fields if future use includes personal data).
+  - If deployed publicly, basic privacy considerations should be respected (e.g., avoid logging sensitive text fields if future use includes personal data).
 
 ---
 

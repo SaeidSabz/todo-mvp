@@ -11,87 +11,86 @@ It covers:
 - State management and data flow
 - Communication with the backend API
 - UX, responsiveness, and accessibility considerations
-- Testing approach for the frontend
+- Frontend testing strategy
 
-This is a conceptual design, not an implementation guide.
+This document is **conceptual**, but aligned with the current implementation.
 
 ---
 
 ## 2. High-Level Overview
 
-- The frontend is a **single-page application (SPA)** built with **React**.
-- It interacts with the backend via **HTTP/JSON**.
-- It focuses on a **simple, fast, and clean UI** for:
+- The frontend is a **single-page application (SPA)** built with **React + TypeScript**.
+- It communicates with the backend via **HTTP/JSON**.
+- The UI focuses on:
   - Viewing tasks
   - Creating tasks
-  - Updating tasks (including status)
+  - Updating tasks
   - Deleting tasks
-  - Filtering by status
+  - Filtering tasks by completion status
 
-The frontend is structured to be:
+Design goals:
 
-- Easy to understand for reviewers
-- Easy to extend (e.g., adding more views or features later)
-- Easy to test (component tests and end-to-end tests)
+- Clear and readable structure
+- Minimal but production-minded
+- Easy to review and extend
+- Strong automated test coverage
 
 ---
 
 ## 3. Main User Flows
 
-The frontend must support these primary flows:
+The frontend supports the following flows:
 
 1. **View tasks**
-   - User lands on a main page showing the list of tasks.
-   - User can see status and basic details at a glance.
+   - User opens the app and sees the task list.
+   - Each task displays title, status, and optional metadata.
 
 2. **Create a task**
-   - User opens a form to add a new task.
-   - User fills title (required) and optional fields (description, status, due date, priority).
-   - On submit, the task is created and appears in the list.
+   - User clicks “New Task”.
+   - User enters title (required) and optional description / due date.
+   - Task appears in the list after successful creation.
 
 3. **Update a task**
-   - User selects a task to edit.
-   - User can modify fields and save.
-   - Changes are reflected in the list view.
+   - User edits an existing task.
+   - Changes are persisted and reflected in the list.
 
 4. **Change task status**
-   - User can change status (e.g., Todo → In Progress → Done) via edit form or quick action.
-   - Status change is visual and persisted via the API.
+   - User toggles task completion (Open ↔ Completed).
+   - Status is updated visually and persisted.
 
 5. **Delete a task**
-   - User can delete a task from the list or detail view.
-   - The list updates and the task disappears.
+   - User deletes a task from the list.
+   - Confirmation is shown before deletion.
+   - Task disappears after success.
 
-6. **Filter by status**
-   - User can filter tasks by status (e.g., All, Todo, In Progress, Done).
-   - Filter affects only the view; actual data remains unchanged on the server.
+6. **Filter tasks**
+   - User selects a filter:
+     - All
+     - Open
+     - Completed
+   - Only visible tasks change; server data is unchanged.
 
 ---
 
 ## 4. Page and Layout Structure
 
-For the MVP, a **single main page** is sufficient, possibly with simple routing.
+### 4.1 Application Structure
 
-- **App Shell / Layout**
-  - Header area
-    - Application title (e.g., “Task Manager”)
-    - Optional: simple navigation or future menu placeholder.
-  - Main content area
-    - Task list
-    - Filters
-    - Create/edit form (inline, modal, or a dedicated section)
+The MVP uses a **single main page**.
 
-- **Primary Page**
-  - `TasksPage` (or equivalent):
-    - Fetches tasks from the backend.
-    - Holds the main state for the task list.
-    - Coordinates components:
-      - Filter controls
-      - Task list view
-      - Task create/edit form
-      - Loading and error states
+- **App**
+  - Root component
+  - Renders the main Tasks page
 
-Routing (e.g., React Router) is optional for MVP. If used, `/` can map to `TasksPage`.
+- **TasksPage**
+  - Fetches tasks from the API
+  - Holds all page-level state:
+    - Tasks
+    - Loading / error states
+    - Filter state
+  - Coordinates all task-related components
+
+No routing is required for the MVP.
 
 ---
 
@@ -99,269 +98,202 @@ Routing (e.g., React Router) is optional for MVP. If used, `/` can map to `Tasks
 
 ### 5.1 Core Components
 
-The main components can be:
+- **TasksPage**
+  - Container component
+  - Owns task data and UI state
+  - Calls API client functions
+  - Applies filtering logic
 
-- `App`
-  - Root component.
-  - Sets up global context providers (if any).
-  - Renders layout and main page.
+- **TaskList**
+  - Receives tasks as props
+  - Renders a grid/list of `TaskCard` components
+  - Shows empty state when no tasks are visible
 
-- `TasksPage`
-  - Fetches tasks from the API.
-  - Stores tasks, loading, error, and filter state.
-  - Passes data and callbacks to child components.
-
-- `TaskList`
-  - Receives an array of tasks to display.
-  - Responsible for rendering each `TaskItem`.
-  - Shows an “empty state” message if no tasks.
-
-- `TaskItem`
-  - Renders a single task row/card:
-    - Title, status, optional due date/priority.
+- **TaskCard**
+  - Displays a single task:
+    - Title
+    - Completion badge (Open / Completed)
+    - Optional description and due date
   - Provides actions:
-    - Edit task
-    - Change status (optional quick action)
-    - Delete task
+    - Edit
+    - Delete
+  - Uses CSS Modules for styling
 
-- `TaskForm`
-  - Used for creating or editing tasks.
-  - Contains inputs for:
-    - Title (required)
-    - Description
-    - Status
-    - Due date
-    - Priority
-  - Handles local form state and validation.
-  - Calls a callback on submit (e.g., `onSubmit(taskData)`).
+- **TaskForm**
+  - Used for create and edit
+  - Manages local form state
+  - Performs basic client-side validation
+  - Calls callbacks on submit
 
-- `StatusFilter`
-  - Allows user to filter tasks by status (e.g., All, Todo, In Progress, Done).
-  - Could be implemented as:
-    - Buttons
-    - Tabs
-    - Dropdown
+- **StatusFilter**
+  - Dropdown selector:
+    - All
+    - Open
+    - Completed
+  - Updates filter state in `TasksPage`
 
-- `SearchBar` (optional)
-  - Allows simple text search on title (and optionally description).
+### 5.2 Supporting Components
 
-### 5.2 Support Components
+- **Loading state**
+  - Displayed while tasks are loading
 
-- `LoadingIndicator`
-  - Displays when data is being loaded from the API.
+- **Error message**
+  - Displayed when API calls fail
 
-- `ErrorBanner` / `ErrorMessage`
-  - Shows user-friendly error messages when:
-    - API requests fail
-    - Validation fails in a way that should be visible globally
-
-- `EmptyState`
-  - Used when there are no tasks to show.
-  - Encourages user to create their first task.
-
-- `Modal` (optional)
-  - For edit/create dialogs if the design uses modals instead of inline forms.
+- **Empty state**
+  - Displayed when there are no tasks
 
 ---
 
 ## 6. State Management and Data Flow
 
-### 6.1 Where State Lives
+### 6.1 State Ownership
 
-For the MVP:
+- **TasksPage** owns:
+  - `tasks: Task[]`
+  - `isLoading: boolean`
+  - `error: string | null`
+  - `filter: "all" | "open" | "completed"`
+  - `editingTask: Task | null`
 
-- **Task list state** (array of tasks):
-  - Stored near the top of the page, e.g., in `TasksPage`.
-  - Passed down via props to `TaskList`, `TaskForm`, etc.
+- **TaskForm** owns:
+  - Local form field state
+  - Validation messages
 
-- **UI state**:
-  - `isLoading` (boolean) for API calls.
-  - `error` (string or object) for failures.
-  - `selectedTask` for edit mode (nullable).
-  - `filterStatus` to track current filter (e.g., "All", "Todo").
+No global store is used.
 
-- Local form state:
-  - Inside `TaskForm`, using local state hooks.
+---
 
 ### 6.2 Data Flow
 
-A typical data flow:
+- **Initial load**
+  - TasksPage calls `fetchTasks()`
+  - Loading state shown
+  - Tasks stored in state
 
-- On initial load:
-  - `TasksPage` calls the API to fetch tasks.
-  - Sets `tasks` state from the response.
-  - Handles loading and error states.
+- **Create**
+  - TaskForm submits
+  - API called
+  - Tasks reloaded or updated locally
 
-- Create task:
-  - User opens `TaskForm` in “create” mode.
-  - On submit, `TasksPage` calls the API (POST).
-  - On success, `TasksPage` updates its `tasks` state:
-    - Either by refetching all tasks, or
-    - By appending the new task to the existing list.
+- **Update**
+  - TaskForm submits changes
+  - API called
+  - Task updated in state
 
-- Edit task:
-  - User selects a task (e.g., clicks an edit button in `TaskItem`).
-  - `TasksPage` sets `selectedTask`.
-  - `TaskForm` shows existing values.
-  - On submit, `TasksPage` calls API (PUT or PATCH).
-  - On success, `TasksPage` updates the corresponding task in `tasks`.
+- **Delete**
+  - User confirms deletion
+  - API called
+  - Task removed from state
 
-- Delete task:
-  - User triggers delete from `TaskItem`.
-  - `TasksPage` calls API (DELETE).
-  - On success, `TasksPage` removes the task from `tasks`.
-
-- Filter tasks:
-  - User changes `filterStatus`.
-  - Derived state: `visibleTasks` = `tasks` filtered by `filterStatus`.
-  - Only the view changes; underlying tasks in state remain unchanged.
-
-### 6.3 Context or Global Store
-
-For the MVP:
-
-- **React Context** can be used if:
-  - There is a desire to avoid prop drilling through multiple layers.
-- A dedicated global store (Redux, Zustand, etc.) is **not required**.
-- The design should not prevent introducing a global store later, but it is intentionally kept simple initially.
+- **Filter**
+  - Filter state updated
+  - Derived list computed:
+    - No server call required
 
 ---
 
 ## 7. API Integration Layer
 
-The frontend should use a small **API client layer** to encapsulate HTTP calls.
+### 7.1 Responsibilities
 
-### 7.1 API Client Responsibilities
+The API client layer:
 
-- Expose functions such as:
-  - `fetchTasks(filters)`
-  - `createTask(taskPayload)`
-  - `updateTask(id, taskPayload)`
-  - `deleteTask(id)`
-  - Optional: `updateTaskStatus(id, status)`
+- Centralizes HTTP calls
+- Handles:
+  - Base URL configuration via environment variables
+  - JSON parsing
+  - Error normalization
 
-- Handle low-level concerns:
-  - Base URL configuration
-  - HTTP methods and headers
-  - Parsing JSON responses
-  - Handling non-2xx responses by throwing or returning standardized error objects
+Exposed functions include:
 
-### 7.2 Error Handling Strategy
-
-- API client should:
-  - Normalize error shapes where possible.
-  - Surface enough information for UI to display a friendly message.
-
-- UI should:
-  - Display contextual error messages (e.g., near form fields for validation).
-  - Show a global or banner error for larger failures (e.g., server down).
+- `getTasks()`
+- `createTask(payload)`
+- `updateTask(id, payload)`
+- `deleteTask(id)`
 
 ---
 
-## 8. UX and Interaction Design
+### 7.2 Error Handling
 
-### 8.1 Core UX Principles
-
-- **Simple and clean**
-  - Minimal visual clutter.
-  - Focus on tasks and core actions.
-
-- **Inline feedback**
-  - Validation errors shown right under or next to the fields.
-  - Visual cues on success (e.g., reset form, new task appears).
-
-- **Clear call-to-action**
-  - Prominent “Add Task” button or section.
-
-### 8.2 Loading and Empty States
-
-- On initial load:
-  - Show a loading indicator while tasks are fetched.
-- If no tasks:
-  - Show a friendly message and an invitation to create a first task.
-
-### 8.3 Responsiveness
-
-- **Desktop**
-  - Use a layout that shows:
-    - Task list
-    - Clear “Add task” entry point
-  - Optional: two-pane layout (list + details) if implemented.
-
-- **Mobile**
-  - Stack content vertically:
-    - Header
-    - Filter controls
-    - Task list
-    - Add button / form
-  - Avoid horizontal scroll; use columns and lists that reflow naturally.
+- API errors are surfaced as user-friendly messages
+- UI displays:
+  - Inline errors for forms
+  - Global error message for fetch failures
 
 ---
 
-## 9. Accessibility Considerations
+## 8. Styling and UX
 
-- Use semantic HTML elements where possible:
-  - `<button>` for actions.
-  - `<form>`, `<label>`, `<input>`, `<textarea>` for forms.
-  - Headings for structure.
+### 8.1 Styling Approach
 
-- Ensure:
-  - Each input has an associated label.
-  - Focus order is logical.
-  - Keyboard navigation can reach all important actions.
+- **CSS Modules**
+  - Each component owns its styles
+  - Prevents global CSS leakage
+  - Encourages encapsulation
 
-- Use appropriate ARIA attributes only when needed, not as a replacement for semantic HTML.
+### 8.2 UX Principles
 
-Accessibility is “best effort” at MVP level but should avoid obviously inaccessible patterns.
+- Clear call-to-action buttons
+- Immediate visual feedback
+- Loading and disabled states during async operations
+- Minimal visual noise
+
+---
+
+## 9. Responsiveness and Accessibility
+
+- Responsive layout using flexible grids
+- Semantic HTML elements:
+  - `button`, `form`, `label`, `input`
+- Keyboard-accessible interactions
+- Accessible labels and ARIA attributes where needed
+
+Accessibility is best-effort but avoids obvious issues.
 
 ---
 
 ## 10. Frontend Testing Strategy
 
-### 10.1 Unit and Component Tests (Vitest (Jest-compatible API) + React Testing Library)
+### 10.1 Unit & Component Tests
 
-- Test key components:
-  - `TaskList`:
-    - Renders tasks correctly.
-    - Shows empty state when there are none.
-  - `TaskItem`:
-    - Displays correct title, status, and optional fields.
-    - Calls callbacks when actions (edit/delete/status change) are clicked.
-  - `TaskForm`:
-    - Shows validation errors when required fields are empty.
-    - Calls `onSubmit` with correct data on valid input.
+Tools:
+- **Vitest**
+- **React Testing Library**
+- **happy-dom**
 
-- Test view/container logic in `TasksPage` where feasible, using mocking for the API client.
+Coverage includes:
+- Loading state
+- Rendering task data
+- Create / update / delete flows
+- Filter behavior
 
-### 10.2 End-to-End Tests (Playwright)
-
-- Validate critical user flows end-to-end:
-  - Load application and see an empty state.
-  - Create a new task and see it in the list.
-  - Update a task’s fields and status.
-  - Delete a task and confirm it disappears.
-  - Apply a status filter and verify visible tasks match the filter.
-
-These tests confirm that frontend and backend integrate correctly.
+API calls are mocked in tests.
 
 ---
 
-## 11. Extensibility and Future Enhancements
+### 10.2 End-to-End Tests (Future)
 
-The frontend design is structured to accommodate future features:
+Planned with Playwright:
+- Create task
+- Update task
+- Delete task
+- Filter tasks
 
-- **Additional views**
-  - e.g., “Today” view, “Overdue” view, or “Completed tasks” view.
-- **More complex filtering and sorting**
-  - Multi-criteria filters
-  - Server-side pagination and sorting
-- **User accounts and multi-user support**
-  - Login/logout views
-  - Showing tasks per user
-- **Board/Kanban-style layout**
-  - Multiple columns for each status.
-  - Drag-and-drop between columns.
+Not required for MVP completion.
 
-By keeping components focused and state management simple but well-organized, these enhancements can be added without a major redesign.
+---
+
+## 11. Extensibility
+
+The frontend is structured to support:
+
+- Additional filters and sorting
+- Routing and multiple pages
+- Authentication and user context
+- Global state management if needed
+- More complex task views (e.g., Kanban)
+
+The current design intentionally keeps complexity low while remaining extensible.
 
 ---
