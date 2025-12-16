@@ -185,3 +185,9 @@ This repository is structured to be easy to **review**
 - Automated tests and CI from the start
 
 ---  
+
+## 9. License
+
+This project is licensed under the **MIT License**.
+
+See the [LICENSE](LICENSE) file for details.
