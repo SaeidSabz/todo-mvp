@@ -7,3 +7,16 @@ export type TaskDto = {
   createdAt: string;
   updatedAt: string | null;
 };
+
+export type CreateTaskRequest = {
+  title: string;
+  description: string | null;
+  dueDate: string | null;
+};
+
+export type UpdateTaskRequest = {
+  title: string;
+  description: string | null;
+  isCompleted: boolean;
+  dueDate: string | null;
+};

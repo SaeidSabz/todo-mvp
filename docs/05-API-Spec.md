@@ -16,7 +16,7 @@ This spec is implementation-oriented but not tied to specific internal class nam
 ## 2. Base URL and General Conventions
 
 - Base URL (local development example):  
-  - Backend: http://localhost:5000 (actual port may differ)
+  - Backend: https://localhost:7157 (actual port may differ)
   - All endpoints are relative to `/api`.
 
 - API endpoints for tasks:

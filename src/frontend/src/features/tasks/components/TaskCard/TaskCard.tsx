@@ -1,10 +1,16 @@
 import styles from "./TaskCard.module.css";
-import type { TaskDto } from "../types/taskTypes";
+import type { TaskDto } from "../../types/taskTypes";
 
 /**
  * Renders a single task as a card.
  */
-export function TaskCard({ task }: { task: TaskDto }) {
+export function TaskCard(props: {
+  task: TaskDto;
+  onEdit: (task: TaskDto) => void;
+  onDelete: (task: TaskDto) => void;
+  isDeleting: boolean;
+}) {
+  const { task, onEdit, onDelete, isDeleting } = props;
   const due = formatOptionalDate(task.dueDate);
 
   return (
@@ -25,6 +31,21 @@ export function TaskCard({ task }: { task: TaskDto }) {
           <strong>Due:</strong> {due}
         </p>
       )}
+
+    <div className={styles.actions}>
+        <button type="button" className={styles.secondaryButton} onClick={() => onEdit(task)}>
+          Edit
+        </button>
+
+        <button
+          type="button"
+          className={styles.dangerButton}
+          onClick={() => onDelete(task)}
+          disabled={isDeleting}
+        >
+          {isDeleting ? "Deleting..." : "Delete"}
+        </button>
+      </div>
     </article>
   );
 }
