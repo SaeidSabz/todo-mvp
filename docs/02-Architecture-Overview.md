@@ -9,7 +9,7 @@ This document describes the **high-level architecture** of the To-Do Task Manage
 - Key patterns and design decisions
 - How this MVP can grow into a more production-ready system
 
-Implementation-level details (e.g., exact class names, components, or code) are intentionally omitted or kept abstract.
+Implementation-level details are intentionally kept high-level, but this document is aligned with the current codebase structure.
 
 ---
 
@@ -17,20 +17,21 @@ Implementation-level details (e.g., exact class names, components, or code) are 
 
 The system consists of two main parts:
 
-- A **.NET Core backend API** exposing **RESTful JSON endpoints**
-- A **React frontend** that consumes those endpoints and renders the UI
+- A **.NET 10 backend API** exposing **RESTful JSON endpoints**
+- A **React 19 frontend** (TypeScript) that consumes those endpoints and renders the UI
 
 At a high level:
 
 ```text
-+-------------------------+          +---------------------------+
-|       React App         |  HTTP    |        .NET Core API      |
-|  (frontend, TypeScript) | <------> | (backend, EF Core InMem)  |
-+-------------------------+          +---------------------------+
++-------------------------+          +------------------------------+
+|       React App         |  HTTP    |          .NET 10 API         |
+|  (frontend, TypeScript) | <------> | (REST, EF Core InMemory)     |
++-------------------------+          +------------------------------+
                                               |
                                               v
                                         In-Memory Data
                                      (EF Core DbContext)
+
 ```
 
 - All user interactions happen in the **browser** (React).
@@ -39,112 +40,120 @@ At a high level:
 
 ---
 
-## 3. Solution Layout (High-Level)
+## 3. Solution Layout
 
-Planned root structure:
+Current repository structure (simplified):
 ```text
 todo-mvp/src
-├─ backend/      # .NET Core Web API
-└─ frontend/     # React application
+├─ backend/
+│  └─ TodoMvp/
+│     ├─ TodoMvp.slnx
+│     ├─ TodoMvp.Api/
+│     ├─ TodoMvp.Api.Tests/
+│     ├─ TodoMvp.Application/
+│     ├─ TodoMvp.Domain/
+│     └─ TodoMvp.Persistence/
+└─ frontend/
+
 ```
 
-- Each side (backend/frontend) is self-contained with its own tooling and tests.
-- Both are tied together by shared **API contracts** (documented in ```API-Spec.md```).
+- Backend is a multi-project solution (```TodoMvp.slnx```) with clear separation of layers.
+- Frontend is a standalone React application with its own tooling and tests.
+- The two sides are tied together by a stable **API contract** (documented in ```05-API-Spec.md```).
 
 ---
 
 ## 4. Backend Architecture (.NET Core API)  
 
 ### 4.1. Architectural Layers
-
-The backend is organized in conventional, layered form:
+The backend follows a layered structure consistent with Clean Architecture principles:
 ```text
-[ API Layer ]        → Controllers / Endpoints
-[ Application Layer ]→ Services / Use Cases / Business Logic
-[ Data Access Layer ]→ EF Core DbContext, Repositories (if used)
-[ Domain Model ]      → Entities (Task, etc.)
+[ API Layer ]          → Controllers, HTTP concerns, DTOs
+[ Application Layer ]  → Use cases/services, validation, orchestration
+[ Domain Layer ]       → Entities, invariants, domain rules
+[ Persistence Layer ]  → EF Core DbContext, repositories, data access
+
 ```
 
-#### API Layer (Controllers)
+#### API Layer (TodoMvp.Api)
 - Expose RESTful endpoints (e.g., ```/api/tasks```).
-- Translate HTTP requests to **application-level commands** or **queries**.
 - Handle HTTP concerns:
     - Status codes
     - Routing
     - Model binding
-    - Basic validation (e.g., required fields)
+    - Request validation (model validation + application validation)
+- Delegates business logic to Application layer.
 
-#### Application Layer (Services)
+#### Application Layer (TodoMvp.Application)
 - Contains **use case logic** such as:
     - Create task
     - Update task
-    - Change task status
+    - Set status (Open/Completed)
     - Delete task
-- Applies validation and business rules (e.g., non-empty title).
-- Coordinates between domain objects and data layer.
-- Isolates domain logic from transport (HTTP) and persistence details.
+    - Query tasks
+- Owns input validation and business rules (e.g., required title, max length).
+- Depends on abstractions (e.g., repository interfaces), not EF Core directly.
 
-#### Data Access Layer
-- Uses **EF Core InMemory** to persist entities during runtime.
-- Provides an abstraction over data storage (e.g., via a repository or direct DbContext usage).
-- Supports swapping the **InMemory provider** with a real database (e.g., SQL Server) in the future, without changing the application layer.
-
-#### Domain Model
+#### Domain Layer (TodoMvp.Domain)
 - Defines core entities and their invariants.
+- Central entity for MVP is ```TaskItem``` (or equivalent).
 - For MVP, the central entity is ```Task``` (name may differ at implementation time), with fields like:
     - ```Id```
     - ```Title```
-    - ```Description```
-    - ```Status```
+    - ```Description``` (optional)
+    - ```IsCompleted``` (Open vs Completed)
     - ```CreatedAt```
-    - ```UpdatedAt```
-    - Optional: ```DueDate```, ```Priority```
+    - ```UpdatedAt``` (optional)
+    - ```DueDate``` (optional)
+
+#### Persistence Layer (TodoMvp.Persistence)
+- Implements data access using **EF Core InMemory** for MVP.
+- Contains:
+    - ```DbContext``` (InMemory provider)
+    - Repository implementations (e.g., ```ITaskRepository``` → ```TaskRepository```)
+- Designed so storage can be swapped later (SQL Server/PostgreSQL) with minimal impact to Application/API layers.
+
 
 ### 4.2. Technology & Framework Choices
-- **.NET Core Web API** (version to be decided, e.g., .NET 8).
+- **.NET 10 Web API**
 - **EF Core** with **InMemory** provider for convenience and simplicity.
 - Validation via:
     - Data annotations and/or
-    - Application-level validation logic inside services.
+    - Application-layer validation for business rules
+- Error handling:
+    - Centralized exception handling (e.g., ```IExceptionHandler```) returning a consistent error response    
 - Automated tests:
-    - **NUnit** for unit tests and possibly lightweight integration tests (e.g., in-memory test server).
+    - **NUnit** for unit tests
+    - API-level tests in ```TodoMvp.Api.Tests```
 
 ---
 
-## 5. Frontend Architecture (React)  
+## 5. Frontend Architecture (React 19 + TypeScript)
 
 ### 5.1. Overall Structure
 
-The frontend is a **React** single-page application, likely with **TypeScript**, structured into:
+The frontend is a React single-page application structured into:
 ```text
-[ Pages / Views ]      → High-level screens (Task list, etc.)
-[ UI Components ]      → Reusable building blocks (Task item, form, filters)
-[ State / Hooks ]      → Local + shared state, data fetching
-[ API Client Layer ]   → Functions or hooks that call the backend API
+[ Pages / Features ]    → Task page (list + CRUD + filter)
+[ UI Components ]       → TaskCard, TaskForm, Filter dropdown
+[ API Client Layer ]    → Functions calling backend endpoints
+[ Styles ]              → CSS Modules (component-scoped styles)
+
 ```
 
-#### Pages / Views
-- Responsible for:
-    - Fetching and presenting data to the user.
-    - Composing components (list, form, filters).
-- Example page:
-    - ```TasksPage``` — shows list of tasks and allows creating/updating them.
+#### Pages / Features
+- Example: ```TasksPage``` responsible for:
+    - Loading tasks
+    - Handling loading/error states
+    - Creating/editing/deleting tasks
+    - Applying status filter (All/Open/Completed)
 
 #### UI Components
-- Stateless or lightly stateful components:
-    - ```TaskList```
-    - ```TaskItem```
+- SReusable components focused on rendering and interactions:
+    - ```TaskCard```
     - ```TaskForm```
     - ```StatusFilter```
 - Focused on rendering and user interaction, not on API details.
-
-#### State Management
-- Use **React hooks** for:
-
-- Local state (```useState```, ```useReducer```)
-    - Side effects (```useEffect```)
-    - For MVP, **Context API or simple lifting state up** is sufficient.
-- No heavy global state library (like Redux) initially, but structure should not block adding one later.
 
 #### API Client Layer
 - Small module or set of hooks encapsulating HTTP calls:
@@ -152,14 +161,16 @@ The frontend is a **React** single-page application, likely with **TypeScript**,
     - ```createTask(task)```
     - ```updateTask(task)```
     - ```deleteTask(id)```
-- Returns data in a consistent shape to the views.
-- Centralizes error handling (e.g., mapping HTTP errors into UI-consumable states).
+- Encapsulates:
+    - Base URL
+    - Request/response handling
+    - Error mapping to UI-friendly results
 
 ### 5.2. Technology & Framework Choices
-- **React** (version to be decided, e.g., 18+).
-- **TypeScript** (recommended, but optional if out-of-scope).
-- **Vitest (Jest-compatible API)** for unit tests (and React Testing Library for component tests).
-- **Playwright** for end-to-end browser tests.
+- **React 19**
+- **TypeScript**
+- **Vitest** for dev/build tooling
+- **Vitest + React Testing Library** for unit/component tests
 
 ---
 
@@ -170,19 +181,17 @@ The frontend is a **React** single-page application, likely with **TypeScript**,
 - **Data format**: JSON
 - **API style**: RESTful, resource-based (e.g., ```/api/tasks```)
 
-Requests/Responses:
-- Frontend sends JSON payloads to relevant endpoints.
-- Backend returns:
+Backend returns:
     - Successful responses with appropriate HTTP status codes and JSON bodies.
-    - Error responses with a **standard error shape** (e.g., ```{ errorCode, message, details }```).
+    - Error responses with a **standard error shape** (e.g., ```{ error, message }```).
 
 ### 6.2. CORS & Security
-- Backend will be configured with **CORS** to allow calls from the frontend origin (during development).
-- No complex authentication in MVP:
+- Backend configured with CORS for local development.
+- No authentication in MVP:
     - Requests are anonymous or treated as a single user context.
 - Security considerations:
-    - Avoid exposing stack traces or sensitive information in error responses.
-    - Validate input to prevent obvious malformed data.
+    - Do not expose stack traces in responses
+    - Validate inputs on the server
 
 ---
 
@@ -190,20 +199,14 @@ Requests/Responses:
 
 Example: “Create Task” flow:
 
-1. User opens frontend and fills task form.
-2. Frontend validates basic constraints (e.g., title not empty).
-3. Frontend sends POST ```/api/tasks``` with task data in JSON.
-4. Backend controller:
-    - Binds JSON to a DTO or command model.
-    - Calls application service (e.g., ```TaskService.CreateTask()```).
-5. Application service:
-    - Validates business rules.
-    - Creates a domain entity.
-    - Persists it via EF Core (InMemory DbContext).
-6. Backend returns ```201 Created``` with the created task resource.
-7. Frontend updates its state and re-renders the task list.  
-
-This pattern is similar for **update, delete, and fetch** operations.
+1. User fills the “New Task” form in the frontend.
+2. Frontend performs basic validation for UX.
+3. Frontend sends POST ```/api/tasks``` with JSON payload.
+4. Backend controller binds request DTO and validates model state.
+5. Application layer validates business rules and creates the entity.
+6. Persistence layer stores it in EF Core InMemory.
+7. Backend returns 201 Created with the created task. 
+8. Frontend reloads or updates local state and re-renders the task list.
 
 ---
 
@@ -211,82 +214,55 @@ This pattern is similar for **update, delete, and fetch** operations.
 
 ### 8.1. Logging
 - Backend:
-    - Use built-in .NET logging abstractions.
-    - Log key events and errors (at least at MVP level).
+    - Built-in .NET logging abstractions (```ILogger<T>```)
+    - Centralized exception logging
 - Frontend:
-    - Minimal logging (console + error boundaries for critical failures if used).
+    - Minimal logging and user-friendly error messages
 
 ### 8.2. Error Handling
 - Backend:
-    - Centralized exception handling middleware or filters.
-    - Consistent error response format.
+    - Centralized exception handling
+    - Consistent error response contract
 - Frontend:
-    - Handle different error types (e.g., network error vs. validation error).
-    - Display user-friendly error messages (e.g., toast or inline error).
+    - Distinguish network vs API errors
+    - Display user-friendly messages
 
 ### 8.3. Validation
 - Frontend:
-    - Basic client-side validation for UX.
+    - UX-focused validation
 - Backend:
-    - Authoritative validation of input.
-    - Avoids trusting client-side checks.
+    - Authoritative validation
 
 ---
 
 ## 9. Environments & Configuration  
 - **Local Development**
-    - Backend and frontend run on different ports (e.g., ```https://localhost:5001``` and ```http://localhost:3000```).
-    - CORS configured to allow local frontend.
+    - Backend and frontend run on different ports.
+    - Frontend uses VITE_API_BASE_URL (e.g., ```https://localhost:7157```).
     - EF Core InMemory used by default.
-- **Future Environments (Planned)**
-- Staging / production:
+- **Future Environments**
     - Swap InMemory provider for real database (e.g., SQL Server, PostgreSQL).
     - Configure environment-specific settings via appsettings/environment variables.
-
-Configurable aspects:
-- Backend:
-    - Port, connection strings (future), logging levels.
-- Frontend:
-    - API base URL (via environment variables).
-
 ---
 
 ## 10. Testing Strategy (Architecture View)  
 Tests are distributed across layers but share the same architectural goal: **confidence with minimal coupling**.
 
 - **Backend (NUnit)**:
-    - Unit tests for:
-        - Application services
-        - Domain logic (e.g., status transitions)
-    - Optional integration tests for:
-        - Controllers + EF Core InMemory
-- **Frontend (Vitest (Jest-compatible API) for unit tests)**:
-    - Unit/component tests for:
-        - Components (rendering tasks, handling user input)
-        - Hooks (data fetching, state logic)
-- **End-to-End (Playwright)**:
-    - Full-stack scenarios:
-        - “User creates a task and sees it in the list”
-        - “User updates task status”
-        - “User deletes a task”
-    - Validates that frontend and backend integrate correctly.
-
+    - Application services
+    - Repository behavior
+    - Controller/API tests
+- **Frontend (Vitest)**:
+    - Loading states
+    - Rendering tasks
+    - CRUD interactions
+    - Filtering behavior
 ---
 
 ## 11. Evolution Path  
-The architecture is intentionally kept **simple but extensible**. Future changes can include:
-- Replacing InMemory DB with a real relational DB (minimal changes to upper layers).
-- Adding an **authentication layer**:
-    - JWT-based auth, external identity provider, etc.
-- Introducing **multi-user support**:
-    - Associate tasks with a user or workspace.
-- Scaling out:
-    - API behind a load balancer
-    - Separate read/write concerns if needed
-- Enhancing the frontend:
-    - Global state management (Redux / Zustand, etc.) if complexity grows.
-    - More sophisticated routing and layout.
-
-These evolutions are enabled by the separation of concerns and layered design described above.
+- Replace InMemory storage with a real database
+- Add authentication and multi-user support
+- Introduce pagination and server-side filtering
+- Enhance frontend state management if complexity grows
 
 ---  
