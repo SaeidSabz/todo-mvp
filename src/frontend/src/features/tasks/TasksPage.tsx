@@ -4,15 +4,25 @@ import { TaskList } from "./components/TaskList/TaskList";
 import { TaskForm } from "./components/TaskForm/TaskForm";
 import { useTasksQuery } from "./hooks/useTasksQuery";
 import { useTaskMutations } from "./hooks/useTaskMutations";
+import { TaskFilter, type TaskStatusFilter } from "./components/TaskFilter/TaskFilter";
 
 /**
  * Page that loads and displays tasks with loading/error/empty states.
  */
 export function TasksPage() {
   const { status, error, tasks, reload } = useTasksQuery();
-   const { isSaving, saveError, isDeleting, deleteError, create, update, remove } = useTaskMutations();
+  const { isSaving, saveError, isDeleting, deleteError, create, update, remove } = useTaskMutations();
 
-   const [editingTask, setEditingTask] = useState<TaskDto | null>(null);
+  const [editingTask, setEditingTask] = useState<TaskDto | null>(null);
+  const [filter, setFilter] = useState<TaskStatusFilter>("all");
+
+  const filteredTasks = useMemo(() => {
+    if (filter === "all") return tasks;
+    if (filter === "open") return tasks.filter((t) => !t.isCompleted);
+    return tasks.filter((t) => t.isCompleted);
+  }, [tasks, filter]);
+
+
   const isFormOpen = useMemo(() => editingTask !== null, [editingTask]);
 
   async function handleCreate(request: { title: string; description: string | null; dueDate: string | null }) {
@@ -43,8 +53,14 @@ export function TasksPage() {
   return (
     <section style={{ marginTop: "1.5rem" }}>
       <header style={styles.header}>
-        <h2 style={{ margin: 0 }}>Tasks</h2>
-
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+          <h2 style={{ margin: 0 }}>Tasks</h2>
+          <TaskFilter
+            value={filter}
+            onChange={setFilter}
+            disabled={status === "loading" || status === "error"}
+          />
+        </div>
         <div style={{ display: "flex", gap: "0.75rem" }}>
           <button
             type="button"
@@ -94,10 +110,14 @@ export function TasksPage() {
       )}
 
       {status === "success" && tasks.length === 0 && <p style={{ marginTop: "1rem" }}>No tasks yet.</p>}
+      
+      {status === "success" && tasks.length > 0 && filteredTasks.length === 0 && (
+        <p style={{ marginTop: "1rem" }}>No tasks match this filter.</p>
+      )}
 
-      {status === "success" && tasks.length > 0 && (
+      {status === "success" && filteredTasks.length > 0 && (
         <TaskList
-          tasks={tasks}
+          tasks={filteredTasks}
           onEdit={(t) => setEditingTask(t)}
           onDelete={(t) => void handleDelete(t)}
           isDeleting={isDeleting}
