@@ -3,7 +3,14 @@
 A small but production-minded **Task Management** application built with a **.NET Core backend** and a **React frontend**.  
 The goal is to demonstrate **clean architecture, clear API design, and automated testing** while keeping the feature set intentionally minimal.
 
----
+---  
+
+[![CI](https://github.com/SaeidSabz/todo-mvp/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/SaeidSabz/todo-mvp/actions/workflows/ci.yml)
+![.NET](https://img.shields.io/badge/.NET-10-blue)
+![React](https://img.shields.io/badge/React-19-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+
+---  
 
 ## 1. Overview
 
