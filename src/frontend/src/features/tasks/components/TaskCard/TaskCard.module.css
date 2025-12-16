@@ -46,3 +46,30 @@
   color: #666;
   font-size: 0.9rem;
 }
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+}
+
+.secondaryButton,
+.dangerButton {
+  padding: 0.45rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+}
+
+.dangerButton {
+  border-color: #e5a3a3;
+}
+
+.secondaryButton:disabled,
+.dangerButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
