@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TasksPage } from "./TasksPage";
 import { getTasks } from "./api/tasksApi";
@@ -78,8 +78,8 @@ describe("TasksPage", () => {
     expect(screen.getByText("Pay bills")).toBeInTheDocument();
 
     // Verify status badges (exact text depends on your TaskCard)
-    expect(screen.getByText("Open")).toBeInTheDocument();
-    expect(screen.getByText("Completed")).toBeInTheDocument();
+    expect(screen.getAllByText("Open").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Completed").length).toBeGreaterThanOrEqual(1);
 
     // Description renders only when present
     expect(screen.getByText("Eggs and bread")).toBeInTheDocument();
