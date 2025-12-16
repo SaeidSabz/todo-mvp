@@ -7,6 +7,8 @@ The goal is to demonstrate **clean architecture, clear API design, and automated
 ![.NET](https://img.shields.io/badge/.NET-10-blue)
 ![React](https://img.shields.io/badge/React-19-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 
 ---
 
