@@ -2,8 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { test, expect } from "vitest";
 import App from "./App";
 
-test('renders "Frontend is running" text', () => {
+test('renders app title', () => {
   render(<App />);
-  const text = screen.getByText(/Frontend is running/i);
-  expect(text).toBeInTheDocument();
+  expect(screen.getAllByText(/to-do mvp/i).length).toBeGreaterThan(0);
 });

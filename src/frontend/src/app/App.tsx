@@ -1,14 +1,30 @@
 import { TasksPage } from "../features/tasks/TasksPage";
+import styles from "./App.module.css";
 
-function App() {
+export default function App() {
   return (
-    <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
-      <h1>To-Do Task Management MVP</h1>
-      <p>Frontend is running.</p>
+    <div className={styles.shell}>
+      <header className={styles.topbar}>
+        <div className={styles.container}>
+          <div className={styles.brand}>
+            <div className={styles.logo} aria-hidden="true">✓</div>
+            <div>
+              <div className={styles.title}>To-Do MVP</div>
+              <div className={styles.subtitle}>Simple task management</div>
+            </div>
+          </div>
+        </div>
+      </header>
 
-      <TasksPage />
-    </main>
+      <main className={styles.container}>
+        <TasksPage />
+      </main>
+
+      <footer className={styles.footer}>
+        <div className={styles.container}>
+          <span>© {new Date().getFullYear()} To-Do MVP</span>
+        </div>
+      </footer>
+    </div>
   );
 }
-
-export default App;

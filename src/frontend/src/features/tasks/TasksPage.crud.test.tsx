@@ -1,25 +1,28 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TasksPage } from "./TasksPage";
-import {
-  getTasks,
-  createTask,
-  updateTask,
-  deleteTask,
-} from "./api/tasksApi";
 import type { TaskDto } from "./types/taskTypes";
 
-vi.mock("./api/tasksApi", () => ({
-  getTasks: vi.fn(),
-  createTask: vi.fn(),
-  updateTask: vi.fn(),
-  deleteTask: vi.fn(),
+/* ===============================
+   MOCK THE HOOKS (NOT API)
+================================ */
+
+vi.mock("./hooks/useTasksQuery", () => ({
+  useTasksQuery: vi.fn(),
 }));
 
-/**
- * Creates a sample task DTO.
- */
+vi.mock("./hooks/useTaskMutations", () => ({
+  useTaskMutations: vi.fn(),
+}));
+
+import { useTasksQuery } from "./hooks/useTasksQuery";
+import { useTaskMutations } from "./hooks/useTaskMutations";
+
+/* ===============================
+   HELPERS
+================================ */
+
 function makeTask(overrides?: Partial<TaskDto>): TaskDto {
   return {
     id: 1,
@@ -41,111 +44,131 @@ describe("TasksPage CRUD", () => {
   it("creates a task and reloads the list", async () => {
     const user = userEvent.setup();
 
-    // Initial load returns empty
-    vi.mocked(getTasks).mockResolvedValueOnce([]);
+    const reload = vi.fn().mockResolvedValue(undefined);
+    const create = vi.fn().mockResolvedValue(undefined);
 
-    // Create returns a created task
-    vi.mocked(createTask).mockResolvedValueOnce(
-      makeTask({ id: 10, title: "New Task" })
-    );
+    (useTasksQuery as any).mockReturnValue({
+      status: "success",
+      error: null,
+      tasks: [],
+      reload,
+    });
 
-    // Reload after create returns one task
-    vi.mocked(getTasks).mockResolvedValueOnce([
-      makeTask({ id: 10, title: "New Task" }),
-    ]);
+    (useTaskMutations as any).mockReturnValue({
+      isSaving: false,
+      saveError: null,
+      isDeleting: false,
+      deleteError: null,
+      create,
+      update: vi.fn(),
+      remove: vi.fn(),
+    });
 
     render(<TasksPage />);
 
-    // Wait for initial empty state
-    expect(await screen.findByText(/no tasks yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/no tasks yet/i)).toBeInTheDocument();
 
-    // Open create form
     await user.click(screen.getByRole("button", { name: /\+ new task/i }));
 
-    // Fill Title
-    const titleInput = screen.getByLabelText(/title/i);
-    await user.clear(titleInput);
+    const titleInput = screen.getByLabelText(/^title/i);
     await user.type(titleInput, "New Task");
 
-    // Submit
-    await user.click(screen.getByRole("button", { name: /^create$/i }));
+    await user.click(screen.getByRole("button", { name: /create task/i }));
 
-    // Verify API calls
     await waitFor(() => {
-      expect(createTask).toHaveBeenCalledTimes(1);
-      expect(getTasks).toHaveBeenCalledTimes(2); // initial + reload
+      expect(create).toHaveBeenCalledTimes(1);
+      expect(reload).toHaveBeenCalledTimes(1);
     });
-
-    // Verify new task appears
-    expect(await screen.findByText("New Task")).toBeInTheDocument();
   });
 
   it("edits a task and reloads the list", async () => {
     const user = userEvent.setup();
 
     const existing = makeTask({ id: 1, title: "Original Title" });
-    const updated = makeTask({ id: 1, title: "Updated Title" });
+    const reload = vi.fn().mockResolvedValue(undefined);
+    const update = vi.fn().mockResolvedValue(undefined);
 
-    // Initial load shows one task
-    vi.mocked(getTasks).mockResolvedValueOnce([existing]);
+    (useTasksQuery as any).mockReturnValue({
+      status: "success",
+      error: null,
+      tasks: [existing],
+      reload,
+    });
 
-    // Update returns 204 or body; your api wrapper returns TaskDto | null
-    vi.mocked(updateTask).mockResolvedValueOnce(null);
-
-    // Reload shows updated task
-    vi.mocked(getTasks).mockResolvedValueOnce([updated]);
+    (useTaskMutations as any).mockReturnValue({
+      isSaving: false,
+      saveError: null,
+      isDeleting: false,
+      deleteError: null,
+      create: vi.fn(),
+      update,
+      remove: vi.fn(),
+    });
 
     render(<TasksPage />);
 
-    // Wait for task to render
-    expect(await screen.findByText("Original Title")).toBeInTheDocument();
+    const cardTitle = screen.getByText("Original Title");
+    const card = cardTitle.closest("article");
+    expect(card).not.toBeNull();
 
-    // Click Edit on the card
-    await user.click(screen.getByRole("button", { name: /edit/i }));
+    await user.click(within(card!).getByRole("button", { name: /edit/i }));
 
-    // Update Title in form
-    const titleInput = screen.getByLabelText(/title/i);
+    const titleInput = screen.getByLabelText(/^title/i);
     await user.clear(titleInput);
     await user.type(titleInput, "Updated Title");
 
-    // Save
-    await user.click(screen.getByRole("button", { name: /^save$/i }));
+    await user.click(screen.getByRole("button", { name: /save changes/i }));
 
     await waitFor(() => {
-      expect(updateTask).toHaveBeenCalledTimes(1);
-      expect(getTasks).toHaveBeenCalledTimes(2); // initial + reload
+      expect(update).toHaveBeenCalledTimes(1);
+      expect(update).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ title: "Updated Title" })
+      );
+      expect(reload).toHaveBeenCalledTimes(1);
     });
-
-    expect(await screen.findByText("Updated Title")).toBeInTheDocument();
   });
 
   it("deletes a task (confirmed) and reloads the list", async () => {
     const user = userEvent.setup();
 
-    const task = makeTask({ id: 7, title: "To Delete" });
+    const existing = makeTask({ id: 7, title: "Task To Delete" });
+    const reload = vi.fn().mockResolvedValue(undefined);
+    const remove = vi.fn().mockResolvedValue(true);
 
-    vi.mocked(getTasks).mockResolvedValueOnce([task]);
-    vi.mocked(deleteTask).mockResolvedValueOnce(true);
-    vi.mocked(getTasks).mockResolvedValueOnce([]); // after delete reload
+    (useTasksQuery as any).mockReturnValue({
+      status: "success",
+      error: null,
+      tasks: [existing],
+      reload,
+    });
 
-    // Confirm dialog: user confirms deletion
-    vi.stubGlobal("confirm", vi.fn(() => true));
+    (useTaskMutations as any).mockReturnValue({
+      isSaving: false,
+      saveError: null,
+      isDeleting: false,
+      deleteError: null,
+      create: vi.fn(),
+      update: vi.fn(),
+      remove,
+    });
 
     render(<TasksPage />);
 
-    expect(await screen.findByText("To Delete")).toBeInTheDocument();
+    const cardTitle = screen.getByText("Task To Delete");
+    const card = cardTitle.closest("article");
+    expect(card).not.toBeNull();
 
-    // Click Delete on the card
-    await user.click(screen.getByRole("button", { name: /delete/i }));
+    await user.click(within(card!).getByRole("button", { name: /delete/i }));
+
+    // ConfirmDialog confirm button
+    const dialog = screen.getByRole("dialog", { name: /delete task\?/i });
+    await user.click(within(dialog).getByRole("button", { name: /^delete$/i }));
 
     await waitFor(() => {
-      expect(deleteTask).toHaveBeenCalledTimes(1);
-      expect(deleteTask).toHaveBeenCalledWith(7);
-      expect(getTasks).toHaveBeenCalledTimes(2); // initial + reload
+      expect(remove).toHaveBeenCalledTimes(1);
+      expect(remove).toHaveBeenCalledWith(7);
+      expect(reload).toHaveBeenCalledTimes(1);
     });
-
-    expect(await screen.findByText(/no tasks yet/i)).toBeInTheDocument();
-
-    vi.unstubAllGlobals();
   });
 });

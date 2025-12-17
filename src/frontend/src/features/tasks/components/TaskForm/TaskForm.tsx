@@ -1,12 +1,10 @@
 import { useMemo, useState } from "react";
 import type { CreateTaskRequest, TaskDto, UpdateTaskRequest } from "../../types/taskTypes";
 import styles from "./TaskForm.module.css";
+import { Button } from "../../../../ui/Button";
 
 type Mode = "create" | "edit";
 
-/**
- * Task form for create/edit.
- */
 export function TaskForm(props: {
   mode: Mode;
   initialTask?: TaskDto;
@@ -35,91 +33,139 @@ export function TaskForm(props: {
     const desc = description.trim().length > 0 ? description.trim() : null;
 
     if (mode === "create") {
-      const request: CreateTaskRequest = {
-        title: title.trim(),
-        description: desc,
-        dueDate: dueDateIso,
-      };
-      await onCreate(request);
+      await onCreate({ title: title.trim(), description: desc, dueDate: dueDateIso });
       return;
     }
 
     if (!initialTask) return;
 
-    const request: UpdateTaskRequest = {
+    await onUpdate(initialTask.id, {
       title: title.trim(),
       description: desc,
       isCompleted,
       dueDate: dueDateIso,
-    };
-
-    await onUpdate(initialTask.id, request);
+    });
   }
 
-  return (
-    <section className={styles.container}>
-      <header className={styles.header}>
-        <h3 className={styles.heading}>{mode === "create" ? "Create Task" : "Edit Task"}</h3>
+const titleId = useMemo(() => `task-title-${mode}-${initialTask?.id ?? "new"}`, [mode, initialTask?.id]);
+const dueId = useMemo(() => `task-due-${mode}-${initialTask?.id ?? "new"}`, [mode, initialTask?.id]);
+const descId = useMemo(() => `task-desc-${mode}-${initialTask?.id ?? "new"}`, [mode, initialTask?.id]);
 
-        <button type="button" className={styles.secondaryButton} onClick={onCancel} disabled={isSaving}>
-          Cancel
-        </button>
+
+  return (
+    <section className={styles.card} aria-label={mode === "create" ? "Create task form" : "Edit task form"}>
+      <header className={styles.header}>
+        <div className={styles.headerText}>
+          <h3 className={styles.heading}>{mode === "create" ? "New task" : "Edit task"}</h3>
+          <p className={styles.subheading}>
+            {mode === "create" ? "Add details to keep yourself on track." : "Update details and status."}
+          </p>
+        </div>
+
+        <Button type="button" onClick={onCancel} disabled={isSaving}>
+          Close
+        </Button>
       </header>
 
-      {errorMessage && <p className={styles.error}>Error: {errorMessage}</p>}
+      {errorMessage && (
+        <div className={styles.errorBox} role="alert">
+          <strong>Couldn’t save:</strong> {errorMessage}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className={styles.form}>
-        <label className={styles.label}>
-          Title <span className={styles.required}>*</span>
+        {/* Title */}
+        <div className={styles.fieldFull}>
+          <label className={styles.label} htmlFor={titleId}>
+            Title <span className={styles.required}>*</span>
+          </label>
           <input
+            id={titleId}
             className={styles.input}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             maxLength={200}
             placeholder="e.g., Buy groceries"
             disabled={isSaving}
+            autoFocus
           />
-        </label>
+          <div className={styles.helpRow}>
+            <span className={styles.helpText}>Keep it short and action-oriented.</span>
+            <span className={styles.counter}>{title.length}/200</span>
+          </div>
+        </div>
 
-        <label className={styles.label}>
-          Description
-          <textarea
-            className={styles.textarea}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            maxLength={2000}
-            placeholder="Optional"
-            disabled={isSaving}
-          />
-        </label>
-
-        <label className={styles.label}>
-          Due date
+        {/* Due date */}
+        <div className={styles.field}>
+          <label className={styles.label} htmlFor={dueId}>Due date</label>
           <input
+            id={dueId}
             className={styles.input}
             type="datetime-local"
             value={dueDateLocal}
             onChange={(e) => setDueDateLocal(e.target.value)}
             disabled={isSaving}
           />
-        </label>
+          <span className={styles.helpText}>Optional. Leave blank if not needed.</span>
+        </div>
 
-        {mode === "edit" && (
-          <label className={styles.checkboxRow}>
-            <input
-              type="checkbox"
-              checked={isCompleted}
-              onChange={(e) => setIsCompleted(e.target.checked)}
-              disabled={isSaving}
-            />
-            Completed
-          </label>
+        {/* Completed (edit only) */}
+        {mode === "edit" ? (
+          <div className={styles.field}>
+            <label className={styles.label}>Status</label>
+
+            <label className={styles.toggleRow}>
+              <input
+                className={styles.checkbox}
+                type="checkbox"
+                checked={isCompleted}
+                onChange={(e) => setIsCompleted(e.target.checked)}
+                disabled={isSaving}
+              />
+              <span className={styles.toggleText}>
+                Mark as <strong>Completed</strong>
+              </span>
+            </label>
+
+            <span className={styles.helpText}>
+              Completed tasks remain visible but will show as Completed.
+            </span>
+          </div>
+        ) : (
+          <div className={styles.field}>
+            <label className={styles.label}>Status</label>
+            <div className={styles.readonlyPill}>Open</div>
+            <span className={styles.helpText}>New tasks start as Open.</span>
+          </div>
         )}
 
+        {/* Description */}
+        <div className={styles.fieldFull}>
+          <label className={styles.label} htmlFor={descId}>Description</label>
+          <textarea
+            id={descId}
+            className={styles.textarea}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            maxLength={2000}
+            placeholder="Optional notes, steps, or context…"
+            disabled={isSaving}
+          />
+          <div className={styles.helpRow}>
+            <span className={styles.helpText}>Optional, but useful for larger tasks.</span>
+            <span className={styles.counter}>{description.length}/2000</span>
+          </div>
+        </div>
+
+        {/* Actions */}
         <div className={styles.actions}>
-          <button className={styles.primaryButton} type="submit" disabled={!canSubmit}>
-            {isSaving ? "Saving..." : mode === "create" ? "Create" : "Save"}
-          </button>
+          <Button type="button" onClick={onCancel} disabled={isSaving}>
+            Cancel
+          </Button>
+
+          <Button type="submit" variant="primary" disabled={!canSubmit}>
+            {isSaving ? "Saving..." : mode === "create" ? "Create task" : "Save changes"}
+          </Button>
         </div>
       </form>
     </section>

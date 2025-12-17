@@ -1,0 +1,36 @@
+.button {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+  transition: transform 0.06s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.button:hover {
+  border-color: color-mix(in srgb, var(--primary), var(--border) 70%);
+}
+
+.button:active {
+  transform: translateY(1px);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.primary {
+  background: var(--primary);
+  border-color: color-mix(in srgb, var(--primary), var(--border) 55%);
+  color: var(--primary-contrast);
+}
+
+.danger {
+  background: var(--danger);
+  border-color: color-mix(in srgb, var(--danger), var(--border) 55%);
+  color: var(--danger-contrast);
+}
