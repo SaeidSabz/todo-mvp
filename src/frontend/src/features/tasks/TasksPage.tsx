@@ -45,7 +45,7 @@ export function TasksPage() {
   async function confirmDelete() {
     if (!pendingDelete) return;
 
-    const deleted = await remove(pendingDelete.id);
+    await remove(pendingDelete.id);
     setPendingDelete(null);
     await reload();
   }
