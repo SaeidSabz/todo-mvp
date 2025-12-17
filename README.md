@@ -27,7 +27,28 @@ The system is designed as an **MVP**, with a clear path toward a more production
 
 ---
 
-## 2. Tech Stack
+## 2. UI Preview
+
+The UI is intentionally simple, responsive, and production-oriented.  
+It focuses on clarity, accessibility, and predictable user interactions rather than visual complexity.
+
+![Tasks overview](docs/screenshots/ui-tasks-overview.png)
+
+<details>
+  <summary>More screenshots</summary>
+
+  **Create / Edit task**
+  
+  ![Task form](docs/screenshots/ui-task-form.png)
+
+  **Delete confirmation**
+  
+  ![Confirm delete](docs/screenshots/ui-confirm-delete.png)
+</details>
+
+---
+
+## 3. Tech Stack
 
 ### Backend
 - .NET 10 Web API
@@ -43,7 +64,7 @@ The system is designed as an **MVP**, with a clear path toward a more production
 
 ---
 
-## 3. Repository Structure
+## 4. Repository Structure
 
 ```text
 todo-mvp/
@@ -70,7 +91,7 @@ todo-mvp/
    └─ frontend/
 ```
 
-## 4. Documentation
+## 5. Documentation
 
 All key decisions and requirements are documented in `/docs`:
 
@@ -88,15 +109,15 @@ These documents are the **source of truth** for architecture and design decision
 
 ---
 
-## 5. Getting Started (High-Level)
+## 6. Getting Started (High-Level)
 
-### 5.1 Prerequisites
+### 6.1 Prerequisites
 
 - .NET SDK **10**
 - Node.js **20+**
 - npm  
 
-### 5.2 Clone the Repository
+### 6.2 Clone the Repository
 
 Clone the project:
 ```bash
@@ -105,7 +126,7 @@ cd todo-mvp
 ```
 
 
-### 5.3 Run the Backend (TodoMvp.Api)
+### 6.3 Run the Backend (TodoMvp.Api)
 
 The backend solution is located under ```src/backend/TodoMvp```.
 ```bash
@@ -132,7 +153,7 @@ Example response:
 }
 ```
 
-### 5.4 Run the Frontend
+### 6.4 Run the Frontend
 
 ```bash
 cd src/frontend
@@ -147,7 +168,7 @@ VITE_API_BASE_URL=https://localhost:7157
 ```
 
 ---  
-## 6. Testing
+## 7. Testing
 ### Backend Tests
 ```bash
 cd src/backend/TodoMvp
@@ -165,7 +186,7 @@ See [08 – Testing Strategy](docs/08-Testing-Strategy.md) for detailed testing 
 
 ---
 
-## 7. Assumptions, Trade-offs
+## 8. Assumptions, Trade-offs
 
 - Single-user context (no authentication) for simplicity.
 - EF Core InMemory is used to avoid database setup overhead.
@@ -178,7 +199,7 @@ Planned future improvements (beyond MVP) are described in:
 
 ---
 
-## 8. Contribution and Review
+## 9. Contribution and Review
 
 This repository is structured to be easy to **review**
 
@@ -188,7 +209,7 @@ This repository is structured to be easy to **review**
 
 ---  
 
-## 9. License
+## 10. License
 
 This project is licensed under the **MIT License**.
 
